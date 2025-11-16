@@ -1,0 +1,21 @@
+{
+  "short_name": "Teller",
+  "name": "Teller",
+  "description": "Teller: نظام مالي بسيط وأنيق لإدارة جميع أعمالك في مكان واحد. تتبع المعاملات والعهد والسلف والشيكات بسهولة. احصل على تقارير مالية فورية وحافظ على أمان بياناتك.",
+  "icons": [
+    {
+      "src": "icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#111827",
+  "background_color": "#f3f4f6"
+}

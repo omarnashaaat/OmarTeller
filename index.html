@@ -1,0 +1,2325 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teller</title>
+    <meta name="theme-color" content="#000000"/>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Teller">
+    <link rel="apple-touch-icon" href="./icon-192x192.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+      }
+    </script>
+    <style>
+      body {
+        font-family: 'Cairo', sans-serif;
+      }
+      /* Custom scrollbar for a sleeker look */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+      .dark ::-webkit-scrollbar-track {
+        background: #1a1a1a;
+      }
+      ::-webkit-scrollbar-thumb {
+        background-color: #a8a8a8;
+        border-radius: 10px;
+        border: 2px solid #f1f1f1;
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background-color: #4a4a4a;
+        border: 2px solid #1a1a1a;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background-color: #888;
+      }
+      .dark ::-webkit-scrollbar-thumb:hover {
+        background-color: #6a6a6a;
+      }
+      /* Animation for Notifications */
+      @keyframes fadeInDown {
+        from {
+          opacity: 0;
+          transform: translate3d(0, -20%, 0);
+        }
+        to {
+          opacity: 1;
+          transform: translate3d(0, 0, 0);
+        }
+      }
+      .animate-fade-in-down {
+        animation: fadeInDown 0.3s ease-out forwards;
+      }
+      
+      .print-title, .print-title-journal {
+        display: none;
+      }
+      
+      /* Print Styles - Simplified and Corrected */
+      @media print {
+        body {
+          background-color: #ffffff !important;
+          color: #000000 !important;
+        }
+
+        /* Hide all elements marked as non-printable */
+        .no-print, .no-print * {
+          display: none !important;
+        }
+        
+        /* Reset styles for the printable area to ensure it looks good on paper */
+        .printable-area, .printable-content {
+           width: 100%;
+           margin: 0;
+           padding: 0;
+           border: none !important;
+           box-shadow: none !important;
+        }
+
+        .printable-area *, .printable-content * {
+          background-color: transparent !important;
+          color: #000000 !important;
+          box-shadow: none !important;
+          text-shadow: none !important;
+          border-color: #ddd !important;
+        }
+
+        /* Ensure table styles are print-friendly */
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+
+        th, td {
+          border: 1px solid #ddd;
+          padding: 8px;
+          text-align: right !important;
+        }
+
+        thead {
+          background-color: #f2f2f2 !important;
+        }
+
+        /* Show the print-specific title */
+        .print-title {
+          display: block !important;
+          text-align: center;
+          font-size: 1.5rem;
+          font-weight: bold;
+          margin-bottom: 1.5rem;
+        }
+
+        /* Better control over page breaks */
+        table, .summary-grid {
+          page-break-inside: avoid;
+        }
+        
+        h2, h3 {
+          page-break-after: avoid;
+        }
+
+        tr {
+          page-break-inside: avoid;
+        }
+
+        /* Styles for printing a SINGLE journal entry */
+        .print-journal-active body > * {
+            visibility: hidden !important;
+        }
+        
+        .print-journal-active .printable-journal-entry {
+            visibility: visible !important;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0;
+            padding: 1rem;
+            border: none !important;
+            box-shadow: none !important;
+            background-color: #ffffff !important;
+        }
+
+        .print-journal-active .printable-journal-entry * {
+            visibility: visible !important;
+            background-color: transparent !important;
+            color: #000000 !important;
+            box-shadow: none !important;
+            text-shadow: none !important;
+            border-color: #ddd !important;
+        }
+
+        .print-journal-active .printable-journal-entry .print-title-journal {
+            display: block !important;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+        }
+
+        .print-journal-active .printable-journal-entry .no-print {
+            display: none !important;
+        }
+      }
+
+      /* Styles for PDF Export for A4 format */
+      .pdf-export-active {
+        overflow: hidden !important;
+      }
+      .pdf-export-active .printable-area, 
+      .pdf-export-active .printable-content,
+      .pdf-export-active #root,
+      .pdf-export-active .bg-white {
+          font-size: 10pt !important;
+          line-height: 1.5 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+      }
+      .pdf-export-active table {
+          font-size: 9pt !important;
+          width: 100% !important;
+          border-collapse: collapse !important;
+      }
+      .pdf-export-active th, .pdf-export-active td {
+          padding: 6px 8px !important;
+          border: 1px solid #ccc !important;
+          text-align: right !important;
+      }
+      .pdf-export-active h2, .pdf-export-active h3 {
+          font-size: 14pt !important;
+          font-weight: bold !important;
+          margin-bottom: 1rem !important;
+      }
+      .pdf-export-active .summary-card {
+        font-size: 11pt !important;
+        padding: 10px !important;
+        border: 1px solid #ccc !important;
+      }
+      .pdf-export-active .summary-grid {
+          grid-template-columns: repeat(3, 1fr) !important;
+      }
+      .pdf-export-active .print-title, .pdf-export-active .print-title-journal {
+          display: block !important;
+          text-align: center;
+          font-size: 18pt !important;
+          margin-bottom: 2rem !important;
+      }
+      .pdf-export-active,
+      .pdf-export-active * {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border-color: #cccccc !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+        background-image: none !important;
+      }
+      .pdf-export-active thead {
+        background-color: #e8e8e8 !important;
+        color: #000000 !important;
+      }
+      .pdf-export-active .summary-card,
+      .pdf-export-active [class*="bg-"] {
+        background-color: #f5f5f5 !important;
+      }
+      .pdf-export-active [class*="text-"] {
+        color: #000000 !important;
+      }
+      .pdf-export-active .no-print, .pdf-export-active .no-print * {
+        display: none !important;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/client": "https://aistudiocdn.com/react-dom@^19.2.0/client",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.545.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-gray-100 dark:bg-black text-black dark:text-white">
+    <div id="root"></div>
+    <div id="notification-portal"></div>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script type="text/babel" data-type="module">
+      import React, { useState, createContext, useContext, useMemo, useEffect, useCallback, useRef } from 'react';
+      import ReactDOM from 'react-dom/client';
+      import { Home, ArrowRightLeft, HandCoins, BookUser, FileText, Settings, CreditCard, Sun, Moon, LogOut, RefreshCw, Wallet, User, Edit, PlusCircle, Trash2, Search, ArrowUpCircle, ArrowDownCircle, ArrowRightCircle, CheckCircle, XCircle, Printer, FileDown, Upload, Download, X } from 'lucide-react';
+
+      // --- START: types.ts ---
+      type TransactionType = 'receipt' | 'payment';
+
+      interface Transaction {
+        id: string;
+        voucherNo: number;
+        date: string;
+        type: TransactionType;
+        description: string;
+        amount: number;
+        // Fix: Added optional legacy properties to support unused pages.
+        accountId?: string;
+        customerId?: string;
+        supplierId?: string;
+      }
+
+      interface Custody {
+          id: string;
+          voucherNo: number;
+          employeeName: string;
+          amount: number;
+          date: string;
+          description: string;
+          isSettled: boolean;
+      }
+
+      interface Loan {
+          id:string;
+          voucherNo: number;
+          personName: string;
+          amount: number;
+          date: string;
+          description: string;
+          isSettled: boolean;
+      }
+
+      type ChequeStatus = 'under_collection' | 'collected' | 'bounced';
+
+      interface Cheque {
+        id: string;
+        voucherNo: number;
+        type: 'incoming' | 'outgoing';
+        chequeNumber: string;
+        bankName: string;
+        dueDate: string;
+        issueDate: string;
+        amount: number;
+        beneficiary: string; // المستفيد (if outgoing)
+        drawer: string; // الساحب (if incoming)
+        status: ChequeStatus;
+        description: string;
+      }
+
+      interface PettyCashEntry {
+        id: string;
+        date: string;
+        type: 'replenishment' | 'expense';
+        description: string;
+        amount: number;
+      }
+
+      interface Account {
+          id: string;
+          name: string;
+          type: 'asset' | 'liability' | 'equity' | 'revenue' | 'expense';
+          balance: number;
+      }
+
+      interface Customer {
+          id: string;
+          name: string;
+          phone: string;
+          address: string;
+      }
+
+      interface Supplier {
+          id: string;
+          name: string;
+          phone: string;
+          address: string;
+      }
+
+      interface JournalEntryLine {
+          accountId: string;
+          debit: number;
+          credit: number;
+          description: string;
+      }
+
+      interface JournalEntry {
+          id: string;
+          entryNo: number;
+          date: string;
+          description: string;
+          lines: JournalEntryLine[];
+      }
+
+      interface BackupData {
+          userName: string;
+          openingBalance: number;
+          transactions: Transaction[];
+          custodies: Custody[];
+          loans: Loan[];
+          cheques?: Cheque[];
+          pettyCashEntries?: PettyCashEntry[];
+          theme?: 'light' | 'dark'; // Optional theme backup
+          accounts?: Account[];
+          customers?: Customer[];
+          suppliers?: Supplier[];
+          journalEntries?: JournalEntry[];
+      }
+      // --- END: types.ts ---
+
+
+      // --- START: constants.ts ---
+      const NAV_ITEMS = [
+        { name: 'الرئيسية', icon: Home, page: 'dashboard' },
+        { name: 'سندات القبض والصرف', icon: ArrowRightLeft, page: 'transactions' },
+        { name: 'العهد', icon: HandCoins, page: 'custodies' },
+        { name: 'السلف', icon: BookUser, page: 'loans' },
+        { name: 'الشيكات', icon: CreditCard, page: 'cheques' },
+        { name: 'التقارير', icon: FileText, page: 'reports' },
+        { name: 'الإعدادات', icon: Settings, page: 'settings' },
+      ];
+
+      const ACCOUNT_TYPES: { [key: string]: string } = {
+          asset: 'أصول',
+          liability: 'التزامات',
+          equity: 'حقوق ملكية',
+          revenue: 'إيرادات',
+          expense: 'مصروفات',
+      };
+      // --- END: constants.ts ---
+
+
+      // --- START: hooks/useLocalStorage.ts ---
+      function useLocalStorage(key, initialValue) {
+        const [storedValue, setStoredValue] = useState(() => {
+          try {
+            const item = window.localStorage.getItem(key);
+            return item ? JSON.parse(item) : initialValue;
+          } catch (error) {
+            console.error(error);
+            return initialValue;
+          }
+        });
+
+        const setValue = (value) => {
+          try {
+            const valueToStore = value instanceof Function ? value(storedValue) : value;
+            setStoredValue(valueToStore);
+            window.localStorage.setItem(key, JSON.stringify(valueToStore));
+          } catch (error) {
+            console.error(error);
+          }
+        };
+
+        return [storedValue, setValue];
+      }
+      // --- END: hooks/useLocalStorage.ts ---
+
+
+      // --- START: App.tsx (Contexts and Hooks) ---
+      // THEME CONTEXT
+      const ThemeContext = createContext(undefined);
+
+      const ThemeProvider = ({ children }) => {
+        const [theme, setTheme] = useLocalStorage('theme', 'light');
+
+        useEffect(() => {
+          const root = window.document.documentElement;
+          root.classList.remove(theme === 'light' ? 'dark' : 'light');
+          root.classList.add(theme);
+        }, [theme]);
+
+        const toggleTheme = () => {
+          setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
+        };
+
+        return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>;
+      };
+
+      const useTheme = () => {
+        const context = useContext(ThemeContext);
+        if (!context) throw new Error('useTheme must be used within a ThemeProvider');
+        return context;
+      };
+
+      // NOTIFICATION CONTEXT
+      const NotificationContext = createContext(undefined);
+
+      const NotificationProvider = ({ children }) => {
+          const [notifications, setNotifications] = useState([]);
+
+          const addNotification = useCallback((message, type = 'info') => {
+              const id = Date.now();
+              setNotifications(prev => [...prev, { id, message, type }]);
+              setTimeout(() => {
+                  setNotifications(prev => prev.filter(n => n.id !== id));
+              }, 4000);
+          }, []);
+
+          return (
+              <NotificationContext.Provider value={{ addNotification }}>
+                  {children}
+                  <div className="fixed top-5 right-5 z-50 space-y-2">
+                      {notifications.map(n => (
+                          <div key={n.id} className={`animate-fade-in-down flex items-center p-4 rounded-lg shadow-lg text-white ${
+                              n.type === 'success' ? 'bg-green-500' : n.type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+                          }`}>
+                              <span>{n.message}</span>
+                              <button onClick={() => setNotifications(prev => prev.filter(notif => notif.id !== n.id))} className="mr-4 text-white">
+                                  <X size={18} />
+                              </button>
+                          </div>
+                      ))}
+                  </div>
+              </NotificationContext.Provider>
+          );
+      };
+
+      const useNotification = () => {
+          const context = useContext(NotificationContext);
+          if (!context) throw new Error('useNotification must be used within a NotificationProvider');
+          return context;
+      };
+
+      // DATA CONTEXT
+      const DataContext = createContext(undefined);
+
+      const DataProvider = ({ children }) => {
+          const [user, setUser] = useLocalStorage('userName', null);
+          const [transactions, setTransactions] = useLocalStorage('transactions', []);
+          const [custodies, setCustodies] = useLocalStorage('custodies', []);
+          const [loans, setLoans] = useLocalStorage('loans', []);
+          const [cheques, setCheques] = useLocalStorage('cheques', []);
+          const [openingBalance, setOpeningBalance] = useLocalStorage('openingBalance', 0);
+
+          const value = useMemo(() => ({
+              user, setUser,
+              transactions, setTransactions,
+              custodies, setCustodies,
+              loans, setLoans,
+              cheques, setCheques,
+              openingBalance, setOpeningBalance,
+          }), [user, transactions, custodies, loans, cheques, openingBalance]);
+
+          return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
+      };
+
+      const useData = () => {
+          const context = useContext(DataContext);
+          if (!context) throw new Error('useData must be used within a DataProvider');
+          return context;
+      };
+      // --- END: App.tsx (Contexts and Hooks) ---
+
+
+      // --- START: components/ConfirmModal.tsx ---
+      const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => {
+        if (!isOpen) return null;
+
+        return (
+          <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-sm">
+              <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">{title}</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">{message}</p>
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={onClose}
+                  className="py-2 px-4 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500"
+                >
+                  إلغاء
+                </button>
+                <button
+                  onClick={onConfirm}
+                  className="py-2 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                >
+                  تأكيد
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      };
+      // --- END: components/ConfirmModal.tsx ---
+
+      
+      // --- START: components/Header.tsx ---
+      const Header = ({ user, onLogout, setCurrentPage }) => {
+        const { theme, toggleTheme } = useTheme();
+
+        return (
+          <header className="bg-white dark:bg-gray-800 shadow-md p-4 flex justify-between items-center no-print">
+            {/* Right side: Logo */}
+            <button onClick={() => setCurrentPage('dashboard')} className="flex items-center gap-3 text-2xl font-bold text-gray-800 dark:text-white">
+              <div className="bg-black dark:bg-white text-white dark:text-black p-2 rounded-md">
+                  <Wallet size={24} />
+              </div>
+              <span>Teller</span>
+            </button>
+
+            {/* Left side: Controls */}
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+                  <span>أهلاً يا</span>
+                  <span className="font-bold">{user}</span>
+              </div>
+
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                aria-label="Toggle theme"
+              >
+                {theme === 'light' ? <Moon size={22} /> : <Sun size={22} />}
+              </button>
+              
+              <button
+                onClick={() => window.location.reload()}
+                className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                aria-label="Refresh"
+              >
+                  <RefreshCw size={20} />
+              </button>
+              
+              <button
+                onClick={onLogout}
+                className="p-2 rounded-full text-red-500 bg-red-100 dark:bg-red-900/50 hover:bg-red-200 dark:hover:bg-red-900/80"
+                aria-label="Logout"
+              >
+                  <LogOut size={20} />
+              </button>
+            </div>
+          </header>
+        );
+      };
+      // --- END: components/Header.tsx ---
+
+
+      // --- START: pages/Login.tsx ---
+      const LoginPage = () => {
+        const [name, setName] = useState('');
+        const { setUser } = useData();
+
+        const handleSubmit = (e) => {
+          e.preventDefault();
+          if (name.trim()) {
+            setUser(name.trim());
+          }
+        };
+
+        return (
+          <div className="flex items-center justify-center h-screen bg-gray-100 dark:bg-black">
+            <div className="w-full max-w-sm p-8 space-y-8 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl">
+              <div>
+                <h2 className="text-3xl font-bold text-center text-emerald-500">Teller</h2>
+                <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+                  يرجى إدخال اسمك للبدء
+                </p>
+              </div>
+              <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+                <div className="relative">
+                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <User className="w-5 h-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    required
+                    className="w-full p-3 pr-10 text-right border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder="الاسم"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+                <div>
+                  <button
+                    type="submit"
+                    className="w-full py-3 px-4 font-semibold rounded-lg text-white bg-emerald-500 hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-200"
+                  >
+                    دخول
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        );
+      };
+      // --- END: pages/Login.tsx ---
+
+
+      // --- START: pages/Dashboard.tsx ---
+      const NavCard = ({ title, icon: Icon, onClick, color }) => (
+          <button onClick={onClick} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex flex-col items-center justify-center gap-4 hover:shadow-lg hover:-translate-y-1 transition-transform duration-200">
+              <div className={`p-3 rounded-full ${color}`}>
+                  <Icon className="text-white" size={28} />
+              </div>
+              <p className="text-md font-semibold text-gray-800 dark:text-white text-center">{title}</p>
+          </button>
+      );
+
+      const CashFlowChart = () => {
+          const { transactions } = useData();
+
+          const chartData = useMemo(() => {
+              const data = {};
+              const today = new Date();
+              const days = [];
+
+              for (let i = 6; i >= 0; i--) {
+                  const date = new Date(today);
+                  date.setDate(today.getDate() - i);
+                  const dateString = date.toISOString().split('T')[0];
+                  days.push({ date: date, dateString });
+                  data[dateString] = { receipts: 0, payments: 0 };
+              }
+
+              transactions.forEach(t => {
+                  const transactionDate = t.date.split('T')[0];
+                  if (data[transactionDate]) {
+                      if (t.type === 'receipt') {
+                          data[transactionDate].receipts += t.amount;
+                      } else {
+                          data[transactionDate].payments += t.amount;
+                      }
+                  }
+              });
+              
+              const values = Object.values(data).flatMap(d => [d.receipts, d.payments]);
+              const maxAmount = Math.max(...values, 1); // Avoid division by zero
+
+              return days.map(({date, dateString}) => ({
+                  date,
+                  ...data[dateString],
+                  receiptsHeight: (data[dateString].receipts / maxAmount) * 100,
+                  paymentsHeight: (data[dateString].payments / maxAmount) * 100,
+              }));
+          }, [transactions]);
+          
+          const formatDay = (date) => {
+              return new Intl.DateTimeFormat('ar-EG', { weekday: 'short' }).format(date);
+          }
+          const formatDate = (date) => {
+              return new Intl.DateTimeFormat('ar-EG', { day: 'numeric', month: 'numeric' }).format(date);
+          }
+          const formatCurrencyCompact = (amount) => {
+              return new Intl.NumberFormat('ar-EG', { notation: 'compact', compactDisplay: 'short' }).format(amount);
+          }
+
+          return (
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                  <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">ملخص الحركة (آخر 7 أيام)</h2>
+                  <div className="flex justify-between items-end h-48 space-x-2 rtl:space-x-reverse">
+                      {chartData.map(({ date, receipts, payments, receiptsHeight, paymentsHeight }) => (
+                          <div key={date.toISOString()} className="flex-1 flex flex-col items-center">
+                              <div className="w-full flex justify-center items-end flex-grow gap-1">
+                                 <div className="w-1/2 bg-green-200 dark:bg-green-700/50 rounded-t-md" style={{ height: `${receiptsHeight}%` }} title={`مقبوضات ${formatDate(date)}: ${formatCurrencyCompact(receipts)}`}></div>
+                                 <div className="w-1/2 bg-red-200 dark:bg-red-700/50 rounded-t-md" style={{ height: `${paymentsHeight}%` }} title={`مدفوعات ${formatDate(date)}: ${formatCurrencyCompact(payments)}`}></div>
+                              </div>
+                              <div className="text-xs text-center text-gray-500 dark:text-gray-400 mt-2">{formatDay(date)} <br/> {formatDate(date)}</div>
+                          </div>
+                      ))}
+                  </div>
+              </div>
+          );
+      };
+
+      const DashboardPage = ({ setCurrentPage }) => {
+        const { transactions, custodies, loans, openingBalance, setOpeningBalance, cheques } = useData();
+        const [isEditingOpeningBalance, setIsEditingOpeningBalance] = useState(false);
+        const [newOpeningBalance, setNewOpeningBalance] = useState(openingBalance);
+
+        const totalReceipts = useMemo(() => transactions
+          .filter(t => t.type === 'receipt')
+          .reduce((sum, t) => sum + t.amount, 0), [transactions]);
+
+        const totalPayments = useMemo(() => transactions
+          .filter(t => t.type === 'payment')
+          .reduce((sum, t) => sum + t.amount, 0), [transactions]);
+          
+        const totalUnsettledCustodies = useMemo(() => custodies
+          .filter(c => !c.isSettled)
+          .reduce((sum, c) => sum + c.amount, 0), [custodies]);
+          
+        const totalUnsettledLoans = useMemo(() => loans
+          .filter(l => !l.isSettled)
+          .reduce((sum, l) => sum + l.amount, 0), [loans]);
+
+        const totalUnderCollectionCheques = useMemo(() => (cheques || [])
+          .filter(c => c.status === 'under_collection' && c.type === 'incoming')
+          .reduce((sum, c) => sum + c.amount, 0), [cheques]);
+
+        const actualCashBalance = openingBalance + totalReceipts - totalPayments;
+        
+        const formatCurrency = (amount) => {
+          return new Intl.NumberFormat('ar-EG', { style: 'currency', currency: 'EGP', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+        };
+
+        const handleOpeningBalanceSave = () => {
+          setOpeningBalance(newOpeningBalance);
+          setIsEditingOpeningBalance(false);
+        };
+
+        const navItemsConfig = [
+          { name: 'سندات القبض والصرف', page: 'transactions', color: 'bg-blue-500' },
+          { name: 'العهد', page: 'custodies', color: 'bg-orange-500' },
+          { name: 'السلف', page: 'loans', color: 'bg-teal-500' },
+          { name: 'الشيكات', page: 'cheques', color: 'bg-indigo-500' },
+          { name: 'التقارير', page: 'reports', color: 'bg-purple-500' },
+          { name: 'الإعدادات', page: 'settings', color: 'bg-gray-500' },
+        ];
+
+        return (
+          <div className="space-y-8">
+              <h1 className="text-4xl font-bold text-gray-800 dark:text-white">لوحة التحكم الرئيسية</h1>
+              
+              {/* Stat Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {/* Opening Balance Card */}
+                  <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-md">
+                      <div className="flex items-center justify-between">
+                          <p className="text-md text-gray-600 dark:text-gray-300">رصيد أول المدة</p>
+                          {!isEditingOpeningBalance ? (
+                              <button onClick={() => { setIsEditingOpeningBalance(true); setNewOpeningBalance(openingBalance); }} className="text-gray-400 hover:text-blue-500">
+                                  <Edit size={16} />
+                              </button>
+                          ) : (
+                               <button onClick={handleOpeningBalanceSave} className="py-1 px-2 bg-emerald-500 text-white rounded-lg text-sm">حفظ</button>
+                          )}
+                      </div>
+                      {!isEditingOpeningBalance ? (
+                          <p className="text-3xl font-bold mt-2 text-gray-700 dark:text-gray-200 text-right">{formatCurrency(openingBalance)}</p>
+                      ) : (
+                          <div className="mt-2">
+                              <input 
+                                  type="number" 
+                                  value={newOpeningBalance} 
+                                  onChange={(e) => setNewOpeningBalance(parseFloat(e.target.value) || 0)}
+                                  className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 text-right"
+                                  autoFocus
+                              />
+                          </div>
+                      )}
+                  </div>
+
+                  {/* Total Receipts Card */}
+                  <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-md">
+                      <p className="text-md text-gray-600 dark:text-gray-300">اجمالي سند قبض</p>
+                      <p className="text-3xl font-bold mt-2 text-green-500 text-right">{formatCurrency(totalReceipts)}</p>
+                  </div>
+
+                  {/* Total Payments Card */}
+                  <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-md">
+                      <p className="text-md text-gray-600 dark:text-gray-300">اجمالي سند صرف</p>
+                      <p className="text-3xl font-bold mt-2 text-red-500 text-right">{formatCurrency(totalPayments)}</p>
+                  </div>
+
+                  {/* Actual Cash Balance Card */}
+                  <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-md">
+                      <p className="text-md text-white bg-blue-500 px-2 py-1 rounded-md inline-block">رصيد الخزينة الفعلى</p>
+                      <p className="text-3xl font-bold mt-2 text-blue-500 text-right">{formatCurrency(actualCashBalance)}</p>
+                  </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Unsettled Custodies */}
+                  <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-md">
+                      <p className="text-md text-gray-600 dark:text-gray-300">إجمالي العهد غير المسواة</p>
+                      <p className="text-3xl font-bold mt-2 text-orange-500 text-right">{formatCurrency(totalUnsettledCustodies)}</p>
+                  </div>
+                  {/* Unsettled Loans */}
+                  <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-md">
+                      <p className="text-md text-gray-600 dark:text-gray-300">إجمالي السلف غير المسددة</p>
+                      <p className="text-3xl font-bold mt-2 text-teal-500 text-right">{formatCurrency(totalUnsettledLoans)}</p>
+                  </div>
+                   {/* Under Collection Cheques */}
+                  <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-md">
+                      <p className="text-md text-gray-600 dark:text-gray-300">شيكات واردة تحت التحصيل</p>
+                      <p className="text-3xl font-bold mt-2 text-indigo-500 text-right">{formatCurrency(totalUnderCollectionCheques)}</p>
+                  </div>
+              </div>
+              
+              {/* Cash Flow Chart */}
+              <CashFlowChart />
+
+
+              {/* Navigation Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 pt-4">
+                  {navItemsConfig.map(item => {
+                    const navItem = NAV_ITEMS.find(ni => ni.page === item.page);
+                    if (!navItem) return null;
+                    return (
+                       <NavCard 
+                          key={item.page} 
+                          title={navItem.name} 
+                          icon={navItem.icon} 
+                          color={item.color}
+                          onClick={() => setCurrentPage(item.page)} 
+                        />
+                    )
+                  })}
+              </div>
+
+              <footer className="text-center text-sm text-gray-500 dark:text-gray-400 pt-8">
+                  مطور: عمر نشأت
+              </footer>
+          </div>
+        );
+      };
+      // --- END: pages/Dashboard.tsx ---
+
+
+      // --- START: pages/Transactions.tsx ---
+      const TransactionsSummaryCard = ({ title, value, color, icon: Icon }) => (
+          <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg shadow-inner flex items-center">
+              <div className={`p-2 rounded-full mr-4 ${color.replace('text', 'bg').replace('-500', '-100 dark:bg-opacity-20')}`}>
+                  <Icon className={color} size={22} />
+              </div>
+              <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
+                  <p className={`text-xl font-bold ${color}`}>{value}</p>
+              </div>
+          </div>
+      );
+
+      const TransactionsPage = ({ setCurrentPage }) => {
+          const { transactions, setTransactions } = useData();
+          const { addNotification } = useNotification();
+          const [isModalOpen, setModalOpen] = useState(false);
+          const [currentTransaction, setCurrentTransaction] = useState(null);
+          const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+          const [transactionToDelete, setTransactionToDelete] = useState(null);
+          const [searchTerm, setSearchTerm] = useState('');
+
+          const getNextVoucherNo = (type) => {
+              const lastVoucher = transactions
+                  .filter(t => t.type === type)
+                  .sort((a, b) => b.voucherNo - a.voucherNo)[0];
+              return (lastVoucher?.voucherNo || 0) + 1;
+          };
+
+          const handleOpenModal = (transaction = null, type = 'receipt') => {
+              if (transaction) {
+                  setCurrentTransaction(transaction);
+              } else {
+                  setCurrentTransaction({
+                      id: '',
+                      date: new Date().toISOString().split('T')[0],
+                      type: type,
+                      voucherNo: getNextVoucherNo(type)
+                  });
+              }
+              setModalOpen(true);
+          };
+
+          const handleSave = (e) => {
+              e.preventDefault();
+              if (!currentTransaction || !currentTransaction.amount || !currentTransaction.date || !currentTransaction.type) {
+                  addNotification('يرجى ملء جميع الحقول المطلوبة.', 'error');
+                  return;
+              }
+
+              if (currentTransaction.id) { // Edit
+                  const updatedTransaction = currentTransaction;
+                  setTransactions(prev => prev.map(t => t.id === updatedTransaction.id ? updatedTransaction : t));
+                  addNotification('تم تحديث السند بنجاح.', 'success');
+              } else { // Add
+                  const newTransaction = {
+                      ...currentTransaction,
+                      id: Date.now().toString(),
+                      voucherNo: currentTransaction.voucherNo || getNextVoucherNo(currentTransaction.type),
+                  };
+                  setTransactions(prev => [...prev, newTransaction]);
+                  addNotification('تم إضافة السند بنجاح.', 'success');
+              }
+
+              setModalOpen(false);
+              setCurrentTransaction(null);
+          };
+          
+          const handleDelete = () => {
+              if (!transactionToDelete) return;
+              setTransactions(prev => prev.filter(t => t.id !== transactionToDelete.id));
+              addNotification('تم حذف السند بنجاح.', 'success');
+              setDeleteModalOpen(false);
+              setTransactionToDelete(null);
+          };
+
+          const filteredTransactions = useMemo(() => {
+              return transactions.filter(t => {
+                  const lowerCaseSearch = searchTerm.toLowerCase();
+                  return (
+                      t.voucherNo.toString().includes(lowerCaseSearch) ||
+                      t.description.toLowerCase().includes(lowerCaseSearch)
+                  );
+              }).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          }, [transactions, searchTerm]);
+
+          const formatCurrency = (amount) => new Intl.NumberFormat('ar-EG', { style: 'currency', currency: 'EGP' }).format(amount);
+          
+          const totals = useMemo(() => {
+              return filteredTransactions.reduce((acc, t) => {
+                  if (t.type === 'receipt') {
+                      acc.receipts += t.amount;
+                  } else {
+                      acc.payments += t.amount;
+                  }
+                  return acc;
+              }, { receipts: 0, payments: 0 });
+          }, [filteredTransactions]);
+
+          return (
+              <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                      <h1 className="text-3xl font-bold text-gray-800 dark:text-white">سندات القبض والصرف</h1>
+                      <button 
+                          onClick={() => setCurrentPage('dashboard')}
+                          className="flex items-center gap-2 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+                      >
+                          <ArrowRightCircle size={20} />
+                          <span>العودة للرئيسية</span>
+                      </button>
+                  </div>
+                  <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <TransactionsSummaryCard title="إجمالي المقبوضات (المعروضة)" value={formatCurrency(totals.receipts)} color="text-green-500" icon={ArrowUpCircle} />
+                          <TransactionsSummaryCard title="إجمالي المدفوعات (المعروضة)" value={formatCurrency(totals.payments)} color="text-red-500" icon={ArrowDownCircle} />
+                      </div>
+
+                       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                          <div className="relative w-full md:w-1/3">
+                              <input
+                                  type="text"
+                                  placeholder="ابحث برقم السند أو الوصف..."
+                                  value={searchTerm}
+                                  onChange={(e) => setSearchTerm(e.target.value)}
+                                  className="w-full p-2 pr-10 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600"
+                              />
+                              <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                          </div>
+                          <div className="flex gap-2">
+                              <button onClick={() => handleOpenModal(null, 'receipt')} className="flex items-center gap-2 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600">
+                                  <PlusCircle size={20} /> سند قبض جديد
+                              </button>
+                              <button onClick={() => handleOpenModal(null, 'payment')} className="flex items-center gap-2 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600">
+                                  <PlusCircle size={20} /> سند صرف جديد
+                              </button>
+                          </div>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                          <table className="w-full text-right">
+                              <thead className="bg-gray-100 dark:bg-gray-700">
+                                  <tr>
+                                      <th className="p-3">رقم السند</th>
+                                      <th className="p-3">التاريخ</th>
+                                      <th className="p-3">النوع</th>
+                                      <th className="p-3">المبلغ</th>
+                                      <th className="p-3">الوصف</th>
+                                      <th className="p-3">إجراءات</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                  {filteredTransactions.map(t => (
+                                      <tr key={t.id} className="border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                          <td className="p-3">{t.voucherNo}</td>
+                                          <td className="p-3">{t.date}</td>
+                                          <td className={`p-3 font-semibold ${t.type === 'receipt' ? 'text-green-500' : 'text-red-500'}`}>
+                                              {t.type === 'receipt' ? 'قبض' : 'صرف'}
+                                          </td>
+                                          <td className="p-3">{formatCurrency(t.amount)}</td>
+                                          <td className="p-3">{t.description}</td>
+                                          <td className="p-3 flex gap-2">
+                                              <button onClick={() => handleOpenModal(t)} className="text-blue-500 hover:text-blue-700"><Edit size={18} /></button>
+                                              <button onClick={() => { setTransactionToDelete(t); setDeleteModalOpen(true); }} className="text-red-500 hover:text-red-700"><Trash2 size={18} /></button>
+                                          </td>
+                                      </tr>
+                                  ))}
+                              </tbody>
+                          </table>
+                      </div>
+                  </div>
+
+                  {isModalOpen && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-lg">
+                              <h3 className="text-xl font-bold mb-4">{currentTransaction?.id ? 'تعديل سند' : `سند ${currentTransaction?.type === 'receipt' ? 'قبض' : 'صرف'} جديد`}</h3>
+                              <form onSubmit={handleSave} className="space-y-4">
+                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div>
+                                          <label>رقم السند</label>
+                                          <input type="number" readOnly value={currentTransaction?.voucherNo || ''} className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700" />
+                                      </div>
+                                      <div>
+                                          <label>التاريخ</label>
+                                          <input type="date" value={currentTransaction?.date || ''} onChange={e => setCurrentTransaction(p => ({ ...p, date: e.target.value }))} className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" required />
+                                      </div>
+                                  </div>
+                                  
+                                  <div>
+                                      <label>المبلغ</label>
+                                      <input type="number" step="0.01" value={currentTransaction?.amount || ''} onChange={e => setCurrentTransaction(p => ({...p, amount: parseFloat(e.target.value)}))} className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" required/>
+                                  </div>
+                                  <div>
+                                      <label>الوصف</label>
+                                      <textarea value={currentTransaction?.description || ''} onChange={e => setCurrentTransaction(p => ({...p, description: e.target.value}))} className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" required></textarea>
+                                  </div>
+
+                                  <div className="flex justify-end gap-4">
+                                      <button type="button" onClick={() => setModalOpen(false)} className="py-2 px-4 bg-gray-200 dark:bg-gray-600 rounded-lg">إلغاء</button>
+                                      <button type="submit" className="py-2 px-4 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600">حفظ</button>
+                                  </div>
+                              </form>
+                          </div>
+                      </div>
+                  )}
+                  
+                  <ConfirmModal 
+                      isOpen={isDeleteModalOpen}
+                      onClose={() => setDeleteModalOpen(false)}
+                      onConfirm={handleDelete}
+                      title="تأكيد الحذف"
+                      message="هل أنت متأكد من رغبتك في حذف هذا السند؟"
+                  />
+              </div>
+          );
+      };
+      // --- END: pages/Transactions.tsx ---
+
+
+      // --- START: pages/Custodies.tsx ---
+      const CustodiesPage = ({ setCurrentPage }) => {
+          const { custodies, setCustodies, transactions, setTransactions } = useData();
+          const { addNotification } = useNotification();
+          const [isModalOpen, setModalOpen] = useState(false);
+          const [currentCustody, setCurrentCustody] = useState(null);
+          const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+          const [custodyToDelete, setCustodyToDelete] = useState(null);
+          const [searchTerm, setSearchTerm] = useState('');
+
+          const getNextCustodyVoucherNo = () => {
+              const lastVoucher = custodies.sort((a, b) => b.voucherNo - a.voucherNo)[0];
+              return (lastVoucher?.voucherNo || 0) + 1;
+          };
+
+          const getNextTransactionVoucherNo = (type) => {
+              const lastVoucher = transactions
+                  .filter(t => t.type === type)
+                  .sort((a, b) => b.voucherNo - a.voucherNo)[0];
+              return (lastVoucher?.voucherNo || 0) + 1;
+          };
+
+          const handleOpenModal = (custody = null) => {
+              setCurrentCustody(custody || {
+                  id: '',
+                  voucherNo: getNextCustodyVoucherNo(),
+                  employeeName: '',
+                  amount: 0,
+                  date: new Date().toISOString().split('T')[0],
+                  description: '',
+                  isSettled: false
+              });
+              setModalOpen(true);
+          };
+
+          const handleSave = (e) => {
+              e.preventDefault();
+              if (!currentCustody?.employeeName || !currentCustody.amount) {
+                  addNotification('اسم الموظف والمبلغ مطلوبان.', 'error');
+                  return;
+              }
+
+              if (currentCustody.id) { // Edit
+                  setCustodies(prev => prev.map(c => c.id === currentCustody.id ? currentCustody : c));
+                  addNotification('تم تحديث العهدة بنجاح.', 'success');
+              } else { // Add
+                  const newCustody = {
+                      id: Date.now().toString(),
+                      voucherNo: currentCustody.voucherNo || getNextCustodyVoucherNo(),
+                      employeeName: currentCustody.employeeName,
+                      amount: currentCustody.amount,
+                      date: currentCustody.date || new Date().toISOString().split('T')[0],
+                      description: currentCustody.description || '',
+                      isSettled: false,
+                  };
+                  const paymentTransaction = {
+                      id: `custody_${newCustody.id}`,
+                      voucherNo: getNextTransactionVoucherNo('payment'),
+                      date: newCustody.date,
+                      type: 'payment',
+                      description: `صرف عهدة للموظف: ${newCustody.employeeName}`,
+                      amount: newCustody.amount,
+                  };
+                  setCustodies(prev => [...prev, newCustody]);
+                  setTransactions(prev => [...prev, paymentTransaction]);
+                  addNotification('تمت إضافة العهدة وإنشاء سند صرف مقابل.', 'success');
+              }
+              setModalOpen(false);
+              setCurrentCustody(null);
+          };
+          
+          const handleDelete = () => {
+              if (!custodyToDelete) return;
+              
+              setTransactions(prev => prev.filter(t => 
+                  t.id !== `custody_${custodyToDelete.id}` && 
+                  t.id !== `custody_settle_${custodyToDelete.id}`
+              ));
+              
+              setCustodies(prev => prev.filter(c => c.id !== custodyToDelete.id));
+              
+              addNotification('تم حذف العهدة والسندات المرتبطة بها بنجاح.', 'success');
+              setDeleteModalOpen(false);
+              setCustodyToDelete(null);
+          };
+
+          const toggleSettled = (custody) => {
+              const updatedCustody = { ...custody, isSettled: !custody.isSettled };
+
+              if (updatedCustody.isSettled) { // Just settled
+                  const receiptTransaction = {
+                      id: `custody_settle_${custody.id}`,
+                      voucherNo: getNextTransactionVoucherNo('receipt'),
+                      date: new Date().toISOString().split('T')[0], // Settle date is today
+                      type: 'receipt',
+                      description: `تسوية عهدة من الموظف: ${custody.employeeName}`,
+                      amount: custody.amount,
+                  };
+                  setTransactions(prev => [...prev, receiptTransaction]);
+                  addNotification(`تم تحديث حالة العهدة إلى "مسواة" وإنشاء سند قبض مقابل.`, 'info');
+              } else { // Un-settled
+                  setTransactions(prev => prev.filter(t => t.id !== `custody_settle_${custody.id}`));
+                  addNotification(`تم تحديث حالة العهدة إلى "غير مسواة" وحذف سند القبض المقابل.`, 'info');
+              }
+
+              setCustodies(prev => prev.map(c => c.id === custody.id ? updatedCustody : c));
+          };
+          
+          const filteredCustodies = useMemo(() => {
+              return custodies.filter(c =>
+                  c.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  c.description.toLowerCase().includes(searchTerm.toLowerCase())
+              ).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          }, [custodies, searchTerm]);
+          
+          const formatCurrency = (amount) => new Intl.NumberFormat('ar-EG', { style: 'currency', currency: 'EGP' }).format(amount);
+
+          return (
+              <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                      <h1 className="text-3xl font-bold text-gray-800 dark:text-white">العهد</h1>
+                      <button 
+                          onClick={() => setCurrentPage('dashboard')}
+                          className="flex items-center gap-2 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+                      >
+                          <ArrowRightCircle size={20} />
+                          <span>العودة للرئيسية</span>
+                      </button>
+                  </div>
+                  <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+                      <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                           <div className="relative w-full md:w-1/3">
+                              <input
+                                  type="text"
+                                  placeholder="ابحث باسم الموظف أو الوصف..."
+                                  value={searchTerm}
+                                  onChange={(e) => setSearchTerm(e.target.value)}
+                                  className="w-full p-2 pr-10 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600"
+                              />
+                              <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                          </div>
+                          <button onClick={() => handleOpenModal()} className="flex items-center gap-2 bg-emerald-500 text-white py-2 px-4 rounded-lg hover:bg-emerald-600">
+                              <PlusCircle size={20} /> عهدة جديدة
+                          </button>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                          <table className="w-full text-right">
+                              <thead className="bg-gray-100 dark:bg-gray-700">
+                                  <tr>
+                                      <th className="p-3">رقم السند</th>
+                                      <th className="p-3">اسم الموظف</th>
+                                      <th className="p-3">المبلغ</th>
+                                      <th className="p-3">التاريخ</th>
+                                      <th className="p-3">الوصف</th>
+                                      <th className="p-3">الحالة</th>
+                                      <th className="p-3">إجراءات</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                  {filteredCustodies.map(c => (
+                                      <tr key={c.id} className="border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                          <td className="p-3">{c.voucherNo}</td>
+                                          <td className="p-3">{c.employeeName}</td>
+                                          <td className="p-3">{formatCurrency(c.amount)}</td>
+                                          <td className="p-3">{c.date}</td>
+                                          <td className="p-3">{c.description}</td>
+                                          <td className="p-3">
+                                              <span onClick={() => toggleSettled(c)} className={`cursor-pointer inline-flex items-center gap-1 px-2 py-1 rounded-full text-sm font-medium ${c.isSettled ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'}`}>
+                                                  {c.isSettled ? <><CheckCircle size={14}/> مسواة</> : <><XCircle size={14}/> غير مسواة</>}
+                                              </span>
+                                          </td>
+                                          <td className="p-3 flex gap-2">
+                                              <button onClick={() => handleOpenModal(c)} className="text-blue-500 hover:text-blue-700"><Edit size={18} /></button>
+                                              <button onClick={() => { setCustodyToDelete(c); setDeleteModalOpen(true); }} className="text-red-500 hover:text-red-700"><Trash2 size={18} /></button>
+                                          </td>
+                                      </tr>
+                                  ))}
+                              </tbody>
+                          </table>
+                      </div>
+                  </div>
+                  {isModalOpen && currentCustody && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
+                              <h3 className="text-xl font-bold mb-4">{currentCustody.id ? 'تعديل عهدة' : 'عهدة جديدة'}</h3>
+                              <form onSubmit={handleSave} className="space-y-4">
+                                  <div>
+                                      <label>رقم السند</label>
+                                      <input type="number" value={currentCustody.voucherNo || ''} readOnly className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700" />
+                                  </div>
+                                  <div>
+                                      <label>اسم الموظف</label>
+                                      <input type="text" value={currentCustody.employeeName || ''} onChange={e => setCurrentCustody(p => ({ ...p, employeeName: e.target.value }))} className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" required />
+                                  </div>
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div>
+                                          <label>المبلغ</label>
+                                          <input type="number" step="0.01" value={currentCustody.amount || ''} onChange={e => setCurrentCustody(p => ({ ...p, amount: parseFloat(e.target.value) }))} className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" required />
+                                      </div>
+                                      <div>
+                                          <label>التاريخ</label>
+                                          <input type="date" value={currentCustody.date || ''} onChange={e => setCurrentCustody(p => ({ ...p, date: e.target.value }))} className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" required />
+                                      </div>
+                                  </div>
+                                  <div>
+                                      <label>الوصف</label>
+                                      <textarea value={currentCustody.description || ''} onChange={e => setCurrentCustody(p => ({...p, description: e.target.value}))} className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"></textarea>
+                                  </div>
+                                  <div className="flex justify-end gap-4">
+                                      <button type="button" onClick={() => setModalOpen(false)} className="py-2 px-4 bg-gray-200 dark:bg-gray-600 rounded-lg">إلغاء</button>
+                                      <button type="submit" className="py-2 px-4 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600">حفظ</button>
+                                  </div>
+                              </form>
+                          </div>
+                      </div>
+                  )}
+                  
+                  <ConfirmModal 
+                      isOpen={isDeleteModalOpen}
+                      onClose={() => setDeleteModalOpen(false)}
+                      onConfirm={handleDelete}
+                      title="تأكيد الحذف"
+                      message="هل أنت متأكد من حذف هذه العهدة؟ سيتم حذف سند الصرف المرتبط بها (وسند القبض إذا كانت مسواة)."
+                  />
+              </div>
+          );
+      };
+      // --- END: pages/Custodies.tsx ---
+
+
+      // --- START: pages/Loans.tsx ---
+      const LoansPage = ({ setCurrentPage }) => {
+          const { loans, setLoans, transactions, setTransactions } = useData();
+          const { addNotification } = useNotification();
+          const [isModalOpen, setModalOpen] = useState(false);
+          const [currentLoan, setCurrentLoan] = useState(null);
+          const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+          const [loanToDelete, setLoanToDelete] = useState(null);
+          const [searchTerm, setSearchTerm] = useState('');
+
+          const getNextLoanVoucherNo = () => {
+              const lastVoucher = loans.sort((a, b) => b.voucherNo - a.voucherNo)[0];
+              return (lastVoucher?.voucherNo || 0) + 1;
+          };
+
+          const getNextTransactionVoucherNo = (type) => {
+              const lastVoucher = transactions
+                  .filter(t => t.type === type)
+                  .sort((a, b) => b.voucherNo - a.voucherNo)[0];
+              return (lastVoucher?.voucherNo || 0) + 1;
+          };
+
+          const handleOpenModal = (loan = null) => {
+              setCurrentLoan(loan || {
+                  id: '',
+                  voucherNo: getNextLoanVoucherNo(),
+                  personName: '',
+                  amount: 0,
+                  date: new Date().toISOString().split('T')[0],
+                  description: '',
+                  isSettled: false
+              });
+              setModalOpen(true);
+          };
+
+          const handleSave = (e) => {
+              e.preventDefault();
+              if (!currentLoan?.personName || !currentLoan.amount) {
+                  addNotification('اسم الشخص والمبلغ مطلوبان.', 'error');
+                  return;
+              }
+
+              if (currentLoan.id) { // Edit
+                  setLoans(prev => prev.map(l => l.id === currentLoan.id ? currentLoan : l));
+                  addNotification('تم تحديث السلفة بنجاح.', 'success');
+              } else { // Add
+                  const newLoan = {
+                      id: Date.now().toString(),
+                      voucherNo: currentLoan.voucherNo || getNextLoanVoucherNo(),
+                      personName: currentLoan.personName,
+                      amount: currentLoan.amount,
+                      date: currentLoan.date || new Date().toISOString().split('T')[0],
+                      description: currentLoan.description || '',
+                      isSettled: false,
+                  };
+                   const paymentTransaction = {
+                      id: `loan_${newLoan.id}`,
+                      voucherNo: getNextTransactionVoucherNo('payment'),
+                      date: newLoan.date,
+                      type: 'payment',
+                      description: `صرف سلفة لـ: ${newLoan.personName}`,
+                      amount: newLoan.amount,
+                  };
+                  setLoans(prev => [...prev, newLoan]);
+                  setTransactions(prev => [...prev, paymentTransaction]);
+                  addNotification('تمت إضافة السلفة وإنشاء سند صرف مقابل.', 'success');
+              }
+              setModalOpen(false);
+              setCurrentLoan(null);
+          };
+          
+          const handleDelete = () => {
+              if (!loanToDelete) return;
+              
+              setTransactions(prev => prev.filter(t => 
+                  t.id !== `loan_${loanToDelete.id}` && 
+                  t.id !== `loan_settle_${loanToDelete.id}`
+              ));
+
+              setLoans(prev => prev.filter(l => l.id !== loanToDelete.id));
+              addNotification('تم حذف السلفة والسندات المرتبطة بها بنجاح.', 'success');
+              setDeleteModalOpen(false);
+              setLoanToDelete(null);
+          };
+
+          const toggleSettled = (loan) => {
+              const updatedLoan = { ...loan, isSettled: !loan.isSettled };
+
+              if (updatedLoan.isSettled) { // Just settled
+                   const receiptTransaction = {
+                      id: `loan_settle_${loan.id}`,
+                      voucherNo: getNextTransactionVoucherNo('receipt'),
+                      date: new Date().toISOString().split('T')[0], // Settle date is today
+                      type: 'receipt',
+                      description: `سداد سلفة من: ${loan.personName}`,
+                      amount: loan.amount,
+                  };
+                  setTransactions(prev => [...prev, receiptTransaction]);
+                  addNotification(`تم تحديث حالة السلفة إلى "مسددة" وإنشاء سند قبض مقابل.`, 'info');
+              } else { // Un-settled
+                  setTransactions(prev => prev.filter(t => t.id !== `loan_settle_${loan.id}`));
+                  addNotification(`تم تحديث حالة السلفة إلى "غير مسددة" وحذف سند القبض المقابل.`, 'info');
+              }
+
+              setLoans(prev => prev.map(l => 
+                  l.id === loan.id ? updatedLoan : l
+              ));
+          };
+          
+          const filteredLoans = useMemo(() => {
+              return loans.filter(l =>
+                  l.personName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  l.description.toLowerCase().includes(searchTerm.toLowerCase())
+              ).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          }, [loans, searchTerm]);
+          
+          const formatCurrency = (amount) => new Intl.NumberFormat('ar-EG', { style: 'currency', currency: 'EGP' }).format(amount);
+
+          return (
+              <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                      <h1 className="text-3xl font-bold text-gray-800 dark:text-white">السلف</h1>
+                      <button 
+                          onClick={() => setCurrentPage('dashboard')}
+                          className="flex items-center gap-2 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+                      >
+                          <ArrowRightCircle size={20} />
+                          <span>العودة للرئيسية</span>
+                      </button>
+                  </div>
+                  <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+                      <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                           <div className="relative w-full md:w-1/3">
+                              <input
+                                  type="text"
+                                  placeholder="ابحث باسم الشخص أو الوصف..."
+                                  value={searchTerm}
+                                  onChange={(e) => setSearchTerm(e.target.value)}
+                                  className="w-full p-2 pr-10 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600"
+                              />
+                              <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                          </div>
+                          <button onClick={() => handleOpenModal()} className="flex items-center gap-2 bg-emerald-500 text-white py-2 px-4 rounded-lg hover:bg-emerald-600">
+                              <PlusCircle size={20} /> سلفة جديدة
+                          </button>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                          <table className="w-full text-right">
+                              <thead className="bg-gray-100 dark:bg-gray-700">
+                                  <tr>
+                                      <th className="p-3">رقم السند</th>
+                                      <th className="p-3">اسم الشخص</th>
+                                      <th className="p-3">المبلغ</th>
+                                      <th className="p-3">التاريخ</th>
+                                      <th className="p-3">الوصف</th>
+                                      <th className="p-3">الحالة</th>
+                                      <th className="p-3">إجراءات</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                  {filteredLoans.map(l => (
+                                      <tr key={l.id} className="border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                          <td className="p-3">{l.voucherNo}</td>
+                                          <td className="p-3">{l.personName}</td>
+                                          <td className="p-3">{formatCurrency(l.amount)}</td>
+                                          <td className="p-3">{l.date}</td>
+                                          <td className="p-3">{l.description}</td>
+                                          <td className="p-3">
+                                              <span onClick={() => toggleSettled(l)} className={`cursor-pointer inline-flex items-center gap-1 px-2 py-1 rounded-full text-sm font-medium ${l.isSettled ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'}`}>
+                                                  {l.isSettled ? <><CheckCircle size={14}/> مسددة</> : <><XCircle size={14}/> غير مسددة</>}
+                                              </span>
+                                          </td>
+                                          <td className="p-3 flex gap-2">
+                                              <button onClick={() => handleOpenModal(l)} className="text-blue-500 hover:text-blue-700"><Edit size={18} /></button>
+                                              <button onClick={() => { setLoanToDelete(l); setDeleteModalOpen(true); }} className="text-red-500 hover:text-red-700"><Trash2 size={18} /></button>
+                                          </td>
+                                      </tr>
+                                  ))}
+                              </tbody>
+                          </table>
+                      </div>
+                  </div>
+                  {isModalOpen && currentLoan && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
+                              <h3 className="text-xl font-bold mb-4">{currentLoan.id ? 'تعديل سلفة' : 'سلفة جديدة'}</h3>
+                              <form onSubmit={handleSave} className="space-y-4">
+                                   <div>
+                                      <label>رقم السند</label>
+                                      <input type="number" value={currentLoan.voucherNo || ''} readOnly className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700" />
+                                  </div>
+                                  <div>
+                                      <label>اسم الشخص</label>
+                                      <input type="text" value={currentLoan.personName || ''} onChange={e => setCurrentLoan(p => ({ ...p, personName: e.target.value }))} className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" required />
+                                  </div>
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div>
+                                          <label>المبلغ</label>
+                                          <input type="number" step="0.01" value={currentLoan.amount || ''} onChange={e => setCurrentLoan(p => ({ ...p, amount: parseFloat(e.target.value) }))} className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" required />
+                                      </div>
+                                      <div>
+                                          <label>التاريخ</label>
+                                          <input type="date" value={currentLoan.date || ''} onChange={e => setCurrentLoan(p => ({ ...p, date: e.target.value }))} className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" required />
+                                      </div>
+                                  </div>
+                                  <div>
+                                      <label>الوصف</label>
+                                      <textarea value={currentLoan.description || ''} onChange={e => setCurrentLoan(p => ({...p, description: e.target.value}))} className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"></textarea>
+                                  </div>
+                                  <div className="flex justify-end gap-4">
+                                      <button type="button" onClick={() => setModalOpen(false)} className="py-2 px-4 bg-gray-200 dark:bg-gray-600 rounded-lg">إلغاء</button>
+                                      <button type="submit" className="py-2 px-4 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600">حفظ</button>
+                                  </div>
+                              </form>
+                          </div>
+                      </div>
+                  )}
+                  
+                  <ConfirmModal 
+                      isOpen={isDeleteModalOpen}
+                      onClose={() => setDeleteModalOpen(false)}
+                      onConfirm={handleDelete}
+                      title="تأكيد الحذف"
+                      message="هل أنت متأكد من حذف هذه السلفة؟ سيتم حذف سند الصرف المرتبط بها (وسند القبض إذا كانت مسددة)."
+                  />
+              </div>
+          );
+      };
+      // --- END: pages/Loans.tsx ---
+
+
+      // --- START: pages/Cheques.tsx ---
+      const statusMap = {
+          under_collection: { text: 'تحت التحصيل', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' },
+          collected: { text: 'تم التحصيل', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' },
+          bounced: { text: 'مرتجع', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' },
+      };
+
+      const ChequesPage = ({ setCurrentPage }) => {
+          const { cheques, setCheques, transactions, setTransactions } = useData();
+          const { addNotification } = useNotification();
+          const [isModalOpen, setModalOpen] = useState(false);
+          const [currentCheque, setCurrentCheque] = useState(null);
+          const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+          const [chequeToDelete, setChequeToDelete] = useState(null);
+          const [searchTerm, setSearchTerm] = useState('');
+
+          const getNextVoucherNo = () => {
+              const lastVoucher = (cheques || []).sort((a, b) => b.voucherNo - a.voucherNo)[0];
+              return (lastVoucher?.voucherNo || 0) + 1;
+          };
+          
+          const getNextTransactionVoucherNo = (type) => {
+              const lastVoucher = transactions.filter(t => t.type === type).sort((a, b) => b.voucherNo - a.voucherNo)[0];
+              return (lastVoucher?.voucherNo || 0) + 1;
+          };
+
+          const handleOpenModal = (cheque = null, type = 'incoming') => {
+              setCurrentCheque(cheque || {
+                  id: '',
+                  voucherNo: getNextVoucherNo(),
+                  type: type,
+                  status: 'under_collection',
+                  issueDate: new Date().toISOString().split('T')[0],
+                  dueDate: new Date().toISOString().split('T')[0],
+              });
+              setModalOpen(true);
+          };
+
+          const handleSave = (e) => {
+              e.preventDefault();
+              if (!currentCheque || !currentCheque.amount || !currentCheque.chequeNumber || !currentCheque.bankName) {
+                  addNotification('يرجى ملء الحقول المطلوبة.', 'error');
+                  return;
+              }
+
+              if (currentCheque.id) { // Edit
+                  setCheques(prev => (prev || []).map(c => c.id === currentCheque.id ? currentCheque : c));
+                  addNotification('تم تحديث الشيك بنجاح.', 'success');
+              } else { // Add
+                  const newCheque = { ...currentCheque, id: Date.now().toString() };
+                  setCheques(prev => [...(prev || []), newCheque]);
+                  addNotification('تمت إضافة الشيك بنجاح.', 'success');
+              }
+              setModalOpen(false);
+              setCurrentCheque(null);
+          };
+
+          const handleDelete = () => {
+              if (!chequeToDelete) return;
+              if (chequeToDelete.status === 'collected') {
+                  addNotification('لا يمكن حذف شيك تم تحصيله، قم بإلغاء التحصيل أولاً.', 'error');
+                  return;
+              }
+              setCheques(prev => (prev || []).filter(c => c.id !== chequeToDelete.id));
+              addNotification('تم حذف الشيك بنجاح.', 'success');
+              setDeleteModalOpen(false);
+              setChequeToDelete(null);
+          };
+
+          const handleStatusChange = (cheque, newStatus) => {
+              const oldStatus = cheque.status;
+              const updatedCheque = { ...cheque, status: newStatus };
+
+              if (oldStatus === 'collected' && newStatus !== 'collected') {
+                   // Remove the transaction associated with collection
+                  setTransactions(prev => prev.filter(t => t.id !== `cheque_${cheque.id}`));
+                  addNotification('تم إلغاء تحصيل الشيك وحذف الحركة المالية.', 'info');
+              }
+
+              if (newStatus === 'collected' && oldStatus !== 'collected') {
+                  const transactionType = cheque.type === 'incoming' ? 'receipt' : 'payment';
+                  const newTransaction = {
+                      id: `cheque_${cheque.id}`,
+                      voucherNo: getNextTransactionVoucherNo(transactionType),
+                      date: new Date().toISOString().split('T')[0], // Collection date is today
+                      type: transactionType,
+                      description: `تحصيل شيك ${cheque.type === 'incoming' ? 'وارد' : 'صادر'} رقم ${cheque.chequeNumber}`,
+                      amount: cheque.amount,
+                  };
+                  setTransactions(prev => [...prev, newTransaction]);
+                  addNotification('تم تحصيل الشيك وإنشاء حركة مالية.', 'success');
+              }
+              
+              setCheques(prev => (prev || []).map(c => (c.id === cheque.id ? updatedCheque : c)));
+          };
+
+          const filteredCheques = useMemo(() => {
+              return (cheques || []).filter(c => {
+                  const search = searchTerm.toLowerCase();
+                  return (
+                      c.chequeNumber.includes(search) ||
+                      c.bankName.toLowerCase().includes(search) ||
+                      (c.drawer && c.drawer.toLowerCase().includes(search)) ||
+                      (c.beneficiary && c.beneficiary.toLowerCase().includes(search)) ||
+                      c.description.toLowerCase().includes(search)
+                  );
+              }).sort((a, b) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime());
+          }, [cheques, searchTerm]);
+          
+          const formatCurrency = (amount) => new Intl.NumberFormat('ar-EG', { style: 'currency', currency: 'EGP' }).format(amount);
+
+          return (
+              <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                      <h1 className="text-3xl font-bold text-gray-800 dark:text-white">إدارة الشيكات</h1>
+                      <button onClick={() => setCurrentPage('dashboard')} className="flex items-center gap-2 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors">
+                          <ArrowRightCircle size={20} /><span>العودة للرئيسية</span>
+                      </button>
+                  </div>
+                  <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+                      <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                          <div className="relative w-full md:w-1/3">
+                              <input type="text" placeholder="ابحث برقم الشيك، البنك، الأطراف..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full p-2 pr-10 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600" />
+                              <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                          </div>
+                          <div className="flex gap-2">
+                              <button onClick={() => handleOpenModal(null, 'incoming')} className="flex items-center gap-2 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600">
+                                  <PlusCircle size={20} /> شيك وارد جديد
+                              </button>
+                              <button onClick={() => handleOpenModal(null, 'outgoing')} className="flex items-center gap-2 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600">
+                                  <PlusCircle size={20} /> شيك صادر جديد
+                              </button>
+                          </div>
+                      </div>
+                      <div className="overflow-x-auto">
+                          <table className="w-full text-right">
+                              <thead className="bg-gray-100 dark:bg-gray-700">
+                                  <tr>
+                                      <th className="p-3">رقم</th>
+                                      <th className="p-3">النوع</th>
+                                      <th className="p-3">رقم الشيك</th>
+                                      <th className="p-3">البنك</th>
+                                      <th className="p-3">المبلغ</th>
+                                      <th className="p-3">تاريخ الاستحقاق</th>
+                                      <th className="p-3">الطرف</th>
+                                      <th className="p-3">الحالة</th>
+                                      <th className="p-3">إجراءات</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                  {filteredCheques.map(c => (
+                                      <tr key={c.id} className="border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                          <td className="p-3">{c.voucherNo}</td>
+                                          <td className={`p-3 font-semibold ${c.type === 'incoming' ? 'text-green-500' : 'text-red-500'}`}>{c.type === 'incoming' ? 'وارد' : 'صادر'}</td>
+                                          <td className="p-3">{c.chequeNumber}</td>
+                                          <td className="p-3">{c.bankName}</td>
+                                          <td className="p-3">{formatCurrency(c.amount)}</td>
+                                          <td className="p-3">{c.dueDate}</td>
+                                          <td className="p-3">{c.type === 'incoming' ? c.drawer : c.beneficiary}</td>
+                                          <td className="p-3">
+                                              <select value={c.status} onChange={(e) => handleStatusChange(c, e.target.value)} className={`border-none rounded-full text-sm font-medium p-1 ${statusMap[c.status].color}`}>
+                                                  <option value="under_collection">تحت التحصيل</option>
+                                                  <option value="collected">تم التحصيل</option>
+                                                  <option value="bounced">مرتجع</option>
+                                              </select>
+                                          </td>
+                                          <td className="p-3 flex gap-2">
+                                              <button onClick={() => handleOpenModal(c)} className="text-blue-500 hover:text-blue-700"><Edit size={18} /></button>
+                                              <button onClick={() => { setChequeToDelete(c); setDeleteModalOpen(true); }} className="text-red-500 hover:text-red-700"><Trash2 size={18} /></button>
+                                          </td>
+                                      </tr>
+                                  ))}
+                              </tbody>
+                          </table>
+                      </div>
+                  </div>
+                  {isModalOpen && currentCheque && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-lg">
+                              <h3 className="text-xl font-bold mb-4">{currentCheque.id ? 'تعديل شيك' : `شيك ${currentCheque.type === 'incoming' ? 'وارد' : 'صادر'} جديد`}</h3>
+                              <form onSubmit={handleSave} className="space-y-4">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div><label>رقم السند</label><input type="number" readOnly value={currentCheque.voucherNo || ''} className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700" /></div>
+                                      <div><label>رقم الشيك</label><input type="text" value={currentCheque.chequeNumber || ''} onChange={e => setCurrentCheque(p => ({...p, chequeNumber: e.target.value}))} className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" required /></div>
+                                      <div><label>اسم البنك</label><input type="text" value={currentCheque.bankName || ''} onChange={e => setCurrentCheque(p => ({...p, bankName: e.target.value}))} className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" required /></div>
+                                      <div><label>المبلغ</label><input type="number" step="0.01" value={currentCheque.amount || ''} onChange={e => setCurrentCheque(p => ({...p, amount: parseFloat(e.target.value)}))} className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" required/></div>
+                                      <div><label>تاريخ الإصدار</label><input type="date" value={currentCheque.issueDate || ''} onChange={e => setCurrentCheque(p => ({ ...p, issueDate: e.target.value }))} className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" required /></div>
+                                      <div><label>تاريخ الاستحقاق</label><input type="date" value={currentCheque.dueDate || ''} onChange={e => setCurrentCheque(p => ({ ...p, dueDate: e.target.value }))} className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" required /></div>
+                                      <div className="md:col-span-2">
+                                          <label>{currentCheque.type === 'incoming' ? 'الساحب (من)' : 'المستفيد (إلى)'}</label>
+                                          <input type="text" value={currentCheque.type === 'incoming' ? (currentCheque.drawer || '') : (currentCheque.beneficiary || '')} onChange={e => setCurrentCheque(p => (p?.type === 'incoming' ? {...p, drawer: e.target.value} : {...p, beneficiary: e.target.value}))} className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" required />
+                                      </div>
+                                  </div>
+                                  <div><label>الوصف</label><textarea value={currentCheque.description || ''} onChange={e => setCurrentCheque(p => ({...p, description: e.target.value}))} className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"></textarea></div>
+                                  <div className="flex justify-end gap-4">
+                                      <button type="button" onClick={() => setModalOpen(false)} className="py-2 px-4 bg-gray-200 dark:bg-gray-600 rounded-lg">إلغاء</button>
+                                      <button type="submit" className="py-2 px-4 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600">حفظ</button>
+                                  </div>
+                              </form>
+                          </div>
+                      </div>
+                  )}
+                  <ConfirmModal isOpen={isDeleteModalOpen} onClose={() => setDeleteModalOpen(false)} onConfirm={handleDelete} title="تأكيد الحذف" message="هل أنت متأكد من حذف هذا الشيك؟ لا يمكن حذف شيك تم تحصيله." />
+              </div>
+          );
+      };
+      // --- END: pages/Cheques.tsx ---
+
+
+      // --- START: pages/Reports.tsx ---
+      const CashStatementReport = () => {
+          const { transactions, openingBalance: initialOpeningBalance } = useData();
+          const today = new Date();
+          const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+          const [startDate, setStartDate] = useState(startOfMonth.toISOString().split('T')[0]);
+          const [endDate, setEndDate] = useState(today.toISOString().split('T')[0]);
+
+          const reportData = useMemo(() => {
+              const transactionsBeforePeriod = transactions.filter(t => t.date < startDate);
+              const periodOpeningBalance = transactionsBeforePeriod.reduce((balance, t) => {
+                  return balance + (t.type === 'receipt' ? t.amount : -t.amount);
+              }, initialOpeningBalance);
+
+              const periodTransactions = transactions
+                  .filter(t => t.date >= startDate && t.date <= endDate)
+                  .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime() || a.voucherNo - b.voucherNo);
+
+              let runningBalance = periodOpeningBalance;
+              const transactionsWithBalance = periodTransactions.map(t => {
+                  const change = t.type === 'receipt' ? t.amount : -t.amount;
+                  runningBalance += change;
+                  return { ...t, balance: runningBalance };
+              });
+
+              const totalReceipts = periodTransactions
+                  .filter(t => t.type === 'receipt')
+                  .reduce((sum, t) => sum + t.amount, 0);
+
+              const totalPayments = periodTransactions
+                  .filter(t => t.type === 'payment')
+                  .reduce((sum, t) => sum + t.amount, 0);
+
+              const closingBalance = periodOpeningBalance + totalReceipts - totalPayments;
+
+              return {
+                  periodOpeningBalance,
+                  transactionsWithBalance,
+                  totalReceipts,
+                  totalPayments,
+                  closingBalance
+              };
+          }, [transactions, initialOpeningBalance, startDate, endDate]);
+
+          const setDateRange = (period) => {
+              const today = new Date();
+              let start = today, end = today;
+              if (period === 'day') {
+                  start = end = today;
+              } else if (period === 'month') {
+                  start = new Date(today.getFullYear(), today.getMonth(), 1);
+                  end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+              } else if (period === 'year') {
+                  start = new Date(today.getFullYear(), 0, 1);
+                  end = new Date(today.getFullYear(), 11, 31);
+              }
+              setStartDate(start.toISOString().split('T')[0]);
+              setEndDate(end.toISOString().split('T')[0]);
+          };
+          
+          const formatCurrency = (amount) => new Intl.NumberFormat('ar-EG', { style: 'currency', currency: 'EGP' }).format(amount);
+
+          return (
+              <div className="space-y-4">
+                  {/* Filters */}
+                   <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow no-print space-y-4">
+                      <div className="flex flex-wrap items-center gap-4">
+                          <div>
+                              <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">من تاريخ</label>
+                              <input type="date" id="startDate" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
+                          </div>
+                          <div>
+                              <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">إلى تاريخ</label>
+                              <input type="date" id="endDate" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" />
+                          </div>
+                          <div className="flex items-end gap-2 pt-5">
+                               <button onClick={() => setDateRange('day')} className="py-2 px-3 bg-gray-200 dark:bg-gray-600 rounded-lg text-sm">اليوم</button>
+                               <button onClick={() => setDateRange('month')} className="py-2 px-3 bg-gray-200 dark:bg-gray-600 rounded-lg text-sm">هذا الشهر</button>
+                               <button onClick={() => setDateRange('year')} className="py-2 px-3 bg-gray-200 dark:bg-gray-600 rounded-lg text-sm">هذه السنة</button>
+                          </div>
+                      </div>
+                  </div>
+
+                  <div id="cash-statement-report" className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow printable-area">
+                      <div className="printable-content">
+                          <h2 className="print-title text-2xl font-bold text-center mb-4">كشف حساب الخزينة</h2>
+                          <p className="text-center text-gray-600 dark:text-gray-300 mb-6">عن الفترة من {startDate} إلى {endDate}</p>
+                          
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 summary-grid">
+                               <div className="summary-card bg-gray-100 dark:bg-gray-700 p-4 rounded-lg text-center">
+                                  <p className="text-sm text-gray-500 dark:text-gray-400">رصيد أول المدة</p>
+                                  <p className="text-xl font-bold">{formatCurrency(reportData.periodOpeningBalance)}</p>
+                              </div>
+                              <div className="summary-card bg-green-100 dark:bg-green-900/50 p-4 rounded-lg text-center">
+                                  <p className="text-sm text-green-600 dark:text-green-300">إجمالي المقبوضات</p>
+                                  <p className="text-xl font-bold text-green-600 dark:text-green-300">{formatCurrency(reportData.totalReceipts)}</p>
+                              </div>
+                              <div className="summary-card bg-red-100 dark:bg-red-900/50 p-4 rounded-lg text-center">
+                                  <p className="text-sm text-red-600 dark:text-red-300">إجمالي المدفوعات</p>
+                                  <p className="text-xl font-bold text-red-600 dark:text-red-300">{formatCurrency(reportData.totalPayments)}</p>
+                              </div>
+                              <div className="summary-card bg-blue-100 dark:bg-blue-900/50 p-4 rounded-lg text-center">
+                                  <p className="text-sm text-blue-600 dark:text-blue-300">الرصيد الختامي</p>
+                                  <p className="text-xl font-bold text-blue-600 dark:text-blue-300">{formatCurrency(reportData.closingBalance)}</p>
+                              </div>
+                          </div>
+
+                          <div className="overflow-x-auto">
+                              <table className="w-full text-right">
+                                  <thead className="bg-gray-100 dark:bg-gray-700">
+                                      <tr>
+                                          <th className="p-3">التاريخ</th>
+                                          <th className="p-3">رقم السند</th>
+                                          <th className="p-3">النوع</th>
+                                          <th className="p-3">الوصف</th>
+                                          <th className="p-3">مقبوضات (دائن)</th>
+                                          <th className="p-3">مدفوعات (مدين)</th>
+                                          <th className="p-3">الرصيد</th>
+                                      </tr>
+                                  </thead>
+                                  <tbody>
+                                      {reportData.transactionsWithBalance.map(t => (
+                                          <tr key={t.id} className="border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                              <td className="p-3">{t.date}</td>
+                                              <td className="p-3">{t.voucherNo}</td>
+                                              <td className={`p-3 font-semibold ${t.type === 'receipt' ? 'text-green-500' : 'text-red-500'}`}>{t.type === 'receipt' ? 'قبض' : 'صرف'}</td>
+                                              <td className="p-3">{t.description}</td>
+                                              <td className="p-3 text-green-500">{t.type === 'receipt' ? formatCurrency(t.amount) : '-'}</td>
+                                              <td className="p-3 text-red-500">{t.type === 'payment' ? formatCurrency(t.amount) : '-'}</td>
+                                              <td className="p-3 font-mono">{formatCurrency(t.balance)}</td>
+                                          </tr>
+                                      ))}
+                                      {reportData.transactionsWithBalance.length === 0 && (
+                                          <tr><td colSpan={7} className="text-center p-8 text-gray-500 dark:text-gray-400">لا توجد معاملات في الفترة المحددة.</td></tr>
+                                      )}
+                                  </tbody>
+                              </table>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          );
+      };
+
+      const CustodiesLoansReport = () => {
+          const { custodies, loans } = useData();
+          const [custodyFilter, setCustodyFilter] = useState('all');
+          const [loanFilter, setLoanFilter] = useState('all');
+
+          const filteredCustodies = useMemo(() => custodies.filter(c => {
+              if (custodyFilter === 'all') return true;
+              return custodyFilter === 'settled' ? c.isSettled : !c.isSettled;
+          }), [custodies, custodyFilter]);
+
+          const filteredLoans = useMemo(() => loans.filter(l => {
+              if (loanFilter === 'all') return true;
+              return loanFilter === 'settled' ? l.isSettled : !l.isSettled;
+          }), [loans, loanFilter]);
+
+          const totalCustodies = useMemo(() => filteredCustodies.reduce((sum, c) => sum + c.amount, 0), [filteredCustodies]);
+          const totalLoans = useMemo(() => filteredLoans.reduce((sum, l) => sum + l.amount, 0), [filteredLoans]);
+
+          const formatCurrency = (amount) => new Intl.NumberFormat('ar-EG', { style: 'currency', currency: 'EGP' }).format(amount);
+
+          return (
+              <div id="custodies-loans-report" className="space-y-6 printable-area">
+                   <div className="printable-content">
+                      <h2 className="print-title text-2xl font-bold text-center mb-4">تقرير العهد والسلف</h2>
+                      {/* Custodies Section */}
+                      <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+                          <div className="flex flex-wrap justify-between items-center mb-4">
+                              <h3 className="text-xl font-bold">العهد</h3>
+                              <div className="flex items-center gap-2 no-print">
+                                  <label>عرض:</label>
+                                  <select value={custodyFilter} onChange={e => setCustodyFilter(e.target.value)} className="p-2 border rounded dark:bg-gray-700 dark:border-gray-600">
+                                      <option value="all">الكل</option>
+                                      <option value="settled">المسواة</option>
+                                      <option value="unsettled">غير المسواة</option>
+                                  </select>
+                              </div>
+                          </div>
+                          <div className="summary-card bg-orange-100 dark:bg-orange-900/50 p-4 rounded-lg text-center mb-4">
+                              <p className="text-sm text-orange-600 dark:text-orange-300">إجمالي العهد المعروضة</p>
+                              <p className="text-xl font-bold text-orange-600 dark:text-orange-300">{formatCurrency(totalCustodies)}</p>
+                          </div>
+                          <div className="overflow-x-auto">
+                              <table className="w-full text-right">
+                                   <thead className="bg-gray-100 dark:bg-gray-700">
+                                      <tr>
+                                          <th className="p-3">اسم الموظف</th><th className="p-3">المبلغ</th><th className="p-3">التاريخ</th><th className="p-3">الوصف</th><th className="p-3">الحالة</th>
+                                      </tr>
+                                  </thead>
+                                  <tbody>
+                                      {filteredCustodies.map(c => (
+                                          <tr key={c.id} className="border-b dark:border-gray-600"><td className="p-3">{c.employeeName}</td><td className="p-3">{formatCurrency(c.amount)}</td><td className="p-3">{c.date}</td><td className="p-3">{c.description}</td><td className="p-3">{c.isSettled ? 'مسواة' : 'غير مسواة'}</td></tr>
+                                      ))}
+                                      {filteredCustodies.length === 0 && <tr><td colSpan={5} className="text-center p-8 text-gray-500">لا توجد عهد تطابق الفلتر.</td></tr>}
+                                  </tbody>
+                              </table>
+                          </div>
+                      </div>
+
+                       {/* Loans Section */}
+                      <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow mt-6">
+                          <div className="flex flex-wrap justify-between items-center mb-4">
+                              <h3 className="text-xl font-bold">السلف</h3>
+                               <div className="flex items-center gap-2 no-print">
+                                  <label>عرض:</label>
+                                  <select value={loanFilter} onChange={e => setLoanFilter(e.target.value)} className="p-2 border rounded dark:bg-gray-700 dark:border-gray-600">
+                                      <option value="all">الكل</option>
+                                      <option value="settled">المسددة</option>
+                                      <option value="unsettled">غير المسددة</option>
+                                  </select>
+                              </div>
+                          </div>
+                           <div className="summary-card bg-teal-100 dark:bg-teal-900/50 p-4 rounded-lg text-center mb-4">
+                              <p className="text-sm text-teal-600 dark:text-teal-300">إجمالي السلف المعروضة</p>
+                              <p className="text-xl font-bold text-teal-600 dark:text-teal-300">{formatCurrency(totalLoans)}</p>
+                          </div>
+                          <div className="overflow-x-auto">
+                              <table className="w-full text-right">
+                                   <thead className="bg-gray-100 dark:bg-gray-700">
+                                      <tr><th className="p-3">اسم الشخص</th><th className="p-3">المبلغ</th><th className="p-3">التاريخ</th><th className="p-3">الوصف</th><th className="p-3">الحالة</th></tr>
+                                  </thead>
+                                  <tbody>
+                                      {filteredLoans.map(l => (
+                                          <tr key={l.id} className="border-b dark:border-gray-600"><td className="p-3">{l.personName}</td><td className="p-3">{formatCurrency(l.amount)}</td><td className="p-3">{l.date}</td><td className="p-3">{l.description}</td><td className="p-3">{l.isSettled ? 'مسددة' : 'غير مسددة'}</td></tr>
+                                      ))}
+                                      {filteredLoans.length === 0 && <tr><td colSpan={5} className="text-center p-8 text-gray-500">لا توجد سلف تطابق الفلتر.</td></tr>}
+                                  </tbody>
+                              </table>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          );
+      };
+
+      const ReportsPage = ({ setCurrentPage }) => {
+          const [activeReport, setActiveReport] = useState('cash');
+
+          const handlePrint = () => window.print();
+
+          const handleExportPDF = () => {
+              const jspdf = window.jspdf;
+              const html2canvas = window.html2canvas;
+              if (!jspdf || !html2canvas) {
+                  alert('PDF export library is not loaded.');
+                  return;
+              }
+
+              const elementId = activeReport === 'cash' ? 'cash-statement-report' : 'custodies-loans-report';
+              const input = document.getElementById(elementId);
+              if (!input) return;
+
+              document.body.classList.add('pdf-export-active');
+              
+              html2canvas(input, { scale: 2, useCORS: true, logging: true }).then(canvas => {
+                  const imgData = canvas.toDataURL('image/png');
+                  const { jsPDF } = jspdf;
+                  const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+                  
+                  const pdfWidth = pdf.internal.pageSize.getWidth();
+                  const canvasWidth = canvas.width;
+                  const canvasHeight = canvas.height;
+                  const ratio = canvasWidth / canvasHeight;
+                  const widthInPdf = pdfWidth - 40; // with margin
+                  const heightInPdf = widthInPdf / ratio;
+                  
+                  pdf.addImage(imgData, 'PNG', 20, 20, widthInPdf, heightInPdf);
+                  pdf.save(`${elementId}_${new Date().toISOString().split('T')[0]}.pdf`);
+                  document.body.classList.remove('pdf-export-active');
+              }).catch(err => {
+                  console.error("PDF Export Error:", err);
+                  document.body.classList.remove('pdf-export-active');
+              });
+          };
+
+          return (
+              <div className="space-y-6">
+                  <div className="flex justify-between items-center no-print">
+                      <h1 className="text-3xl font-bold text-gray-800 dark:text-white">التقارير</h1>
+                       <button 
+                          onClick={() => setCurrentPage('dashboard')}
+                          className="flex items-center gap-2 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+                      >
+                          <ArrowRightCircle size={20} />
+                          <span>العودة للرئيسية</span>
+                      </button>
+                  </div>
+                  
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 no-print">
+                      <div className="flex flex-wrap border-b border-gray-200 dark:border-gray-700 mb-4">
+                           <button onClick={() => setActiveReport('cash')} className={`py-2 px-4 text-sm font-medium ${activeReport === 'cash' ? 'border-b-2 border-emerald-500 text-emerald-600' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}>
+                              كشف حساب الخزينة
+                          </button>
+                          <button onClick={() => setActiveReport('custodies_loans')} className={`py-2 px-4 text-sm font-medium ${activeReport === 'custodies_loans' ? 'border-b-2 border-emerald-500 text-emerald-600' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}>
+                              تقرير العهد والسلف
+                          </button>
+                      </div>
+                      
+                       <div className="flex gap-2">
+                          <button onClick={handlePrint} className="flex items-center gap-2 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600">
+                              <Printer size={20} /> طباعة التقرير الحالي
+                          </button>
+                          <button onClick={handleExportPDF} className="flex items-center gap-2 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600">
+                              <FileDown size={20} /> تصدير PDF للتقرير الحالي
+                          </button>
+                      </div>
+                  </div>
+
+                  {activeReport === 'cash' && <CashStatementReport />}
+                  {activeReport === 'custodies_loans' && <CustodiesLoansReport />}
+                  
+              </div>
+          );
+      };
+      // --- END: pages/Reports.tsx ---
+
+
+      // --- START: pages/Settings.tsx ---
+      const SettingsPage = ({ setCurrentPage }) => {
+          const { 
+              user, setUser, 
+              transactions, setTransactions,
+              custodies, setCustodies,
+              loans, setLoans,
+              cheques, setCheques,
+              openingBalance, setOpeningBalance,
+          } = useData();
+          const { theme } = useTheme();
+          const { addNotification } = useNotification();
+          const [isConfirmModalOpen, setConfirmModalOpen] = useState(false);
+          const fileInputRef = useRef(null);
+          const [pendingBackup, setPendingBackup] = useState(null);
+
+          const handleExport = () => {
+              try {
+                  const backupData = {
+                      userName: user || '',
+                      openingBalance,
+                      transactions,
+                      custodies,
+                      loans,
+                      cheques,
+                      theme
+                  };
+                  const jsonString = JSON.stringify(backupData, null, 2);
+                  const blob = new Blob([jsonString], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  const date = new Date().toISOString().split('T')[0];
+                  a.download = `teller-backup-${date}.json`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                  addNotification('تم تصدير البيانات بنجاح.', 'success');
+              } catch (error) {
+                  console.error('Export failed:', error);
+                  addNotification('فشل تصدير البيانات.', 'error');
+              }
+          };
+
+          const handleImportClick = () => {
+              fileInputRef.current?.click();
+          };
+
+          const handleFileChange = (event) => {
+              const file = event.target.files?.[0];
+              if (!file) return;
+
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                  try {
+                      const text = e.target?.result;
+                      if (typeof text !== 'string') throw new Error('File is not valid text.');
+                      
+                      const data = JSON.parse(text);
+                      
+                      // Basic validation
+                      if (data.userName && Array.isArray(data.transactions) && Array.isArray(data.custodies) && Array.isArray(data.loans) && typeof data.openingBalance === 'number') {
+                          setPendingBackup(data);
+                          setConfirmModalOpen(true);
+                      } else {
+                          throw new Error('ملف النسخة الاحتياطية غير صالح أو تالف.');
+                      }
+                  } catch (error) {
+                      addNotification(error.message || 'فشل في قراءة الملف.', 'error');
+                  }
+              };
+              reader.readAsText(file);
+              // Reset file input to allow importing the same file again
+              event.target.value = '';
+          };
+          
+          const confirmImport = () => {
+              if (!pendingBackup) return;
+              try {
+                  setUser(pendingBackup.userName);
+                  setOpeningBalance(pendingBackup.openingBalance);
+                  setTransactions(pendingBackup.transactions);
+                  setCustodies(pendingBackup.custodies);
+                  setLoans(pendingBackup.loans);
+                  setCheques(pendingBackup.cheques || []);
+                  
+                  if (pendingBackup.theme) {
+                      localStorage.setItem('theme', JSON.stringify(pendingBackup.theme));
+                  }
+
+                  addNotification('تم استيراد البيانات بنجاح! سيتم إعادة تحميل التطبيق.', 'success');
+
+                  setTimeout(() => {
+                      window.location.reload();
+                  }, 1500);
+
+              } catch (error) {
+                  console.error('Import failed during data setting:', error);
+                  addNotification('حدث خطأ أثناء تطبيق البيانات المستوردة.', 'error');
+              } finally {
+                  setConfirmModalOpen(false);
+                  setPendingBackup(null);
+              }
+          };
+
+          return (
+              <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                      <h1 className="text-3xl font-bold text-gray-800 dark:text-white">الإعدادات</h1>
+                      <button 
+                          onClick={() => setCurrentPage('dashboard')}
+                          className="flex items-center gap-2 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+                      >
+                          <ArrowRightCircle size={20} />
+                          <span>العودة للرئيسية</span>
+                      </button>
+                  </div>
+
+                  <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow space-y-8">
+                      {/* Export Section */}
+                      <div>
+                          <h2 className="text-2xl font-semibold border-b-2 border-emerald-500 pb-2 mb-4">النسخ الاحتياطي للبيانات</h2>
+                          <p className="text-gray-600 dark:text-gray-300 mb-4">
+                              قم بتصدير جميع بياناتك (السندات، العهد، السلف، إلخ) إلى ملف واحد آمن. احتفظ بهذا الملف في مكان آمن لاستعادة بياناتك في أي وقت.
+                          </p>
+                          <button
+                              onClick={handleExport}
+                              className="flex items-center gap-2 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
+                          >
+                              <Download size={20} />
+                              تصدير البيانات الآن
+                          </button>
+                      </div>
+                      
+                      {/* Import Section */}
+                      <div>
+                          <h2 className="text-2xl font-semibold border-b-2 border-red-500 pb-2 mb-4">استعادة البيانات</h2>
+                          <p className="text-gray-600 dark:text-gray-300 mb-4">
+                              قم باستيراد بياناتك من ملف نسخة احتياطية. <strong className="text-red-500">تحذير: سيؤدي هذا إلى الكتابة فوق جميع بياناتك الحالية واستبدالها بالبيانات الموجودة في الملف.</strong>
+                          </p>
+                          <input
+                              type="file"
+                              accept=".json"
+                              ref={fileInputRef}
+                              onChange={handleFileChange}
+                              className="hidden"
+                          />
+                          <button
+                              onClick={handleImportClick}
+                              className="flex items-center gap-2 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors"
+                          >
+                              <Upload size={20} />
+                              استيراد من ملف
+                          </button>
+                      </div>
+                  </div>
+                   <ConfirmModal 
+                      isOpen={isConfirmModalOpen}
+                      onClose={() => setConfirmModalOpen(false)}
+                      onConfirm={confirmImport}
+                      title="تأكيد الاستيراد"
+                      message="هل أنت متأكد من رغبتك في استيراد البيانات؟ سيتم حذف جميع البيانات الحالية بشكل نهائي."
+                  />
+              </div>
+          );
+      };
+      // --- END: pages/Settings.tsx ---
+
+      
+      // --- START: App.tsx (Main Components) ---
+      const AppContent = () => {
+        const { user, setUser } = useData();
+        const [currentPage, setCurrentPage] = useState('dashboard');
+
+        const renderPage = () => {
+          switch (currentPage) {
+            case 'dashboard': return <DashboardPage setCurrentPage={setCurrentPage} />;
+            case 'transactions': return <TransactionsPage setCurrentPage={setCurrentPage} />;
+            case 'custodies': return <CustodiesPage setCurrentPage={setCurrentPage} />;
+            case 'loans': return <LoansPage setCurrentPage={setCurrentPage} />;
+            case 'cheques': return <ChequesPage setCurrentPage={setCurrentPage} />;
+            case 'reports': return <ReportsPage setCurrentPage={setCurrentPage} />;
+            case 'settings': return <SettingsPage setCurrentPage={setCurrentPage} />;
+            default: return <DashboardPage setCurrentPage={setCurrentPage} />;
+          }
+        };
+        
+        if (!user) {
+            return <LoginPage />;
+        }
+
+        return (
+          <div className="flex flex-col h-screen bg-gray-100 dark:bg-black">
+              <Header 
+                  user={user}
+                  onLogout={() => setUser(null)}
+                  setCurrentPage={setCurrentPage} 
+              />
+              <main className="flex-1 p-4 md:p-6 overflow-y-auto">
+                  {renderPage()}
+              </main>
+          </div>
+        );
+      }
+
+      const App = () => {
+        return (
+          <ThemeProvider>
+              <NotificationProvider>
+                  <DataProvider>
+                      <AppContent />
+                  </DataProvider>
+              </NotificationProvider>
+          </ThemeProvider>
+        );
+      };
+      // --- END: App.tsx (Main Components) ---
+      
+      
+      // --- START: index.tsx ---
+      const root = ReactDOM.createRoot(
+        document.getElementById('root')
+      );
+      root.render(
+        <React.StrictMode>
+          <App />
+        </React.StrictMode>
+      );
+      // --- END: index.tsx ---
+
+    </script>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
